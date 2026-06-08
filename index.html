@@ -598,9 +598,9 @@ const CH=[
   {n:"CH.09",t:"Organisational Defences"},
   {n:"CH.10",t:"IR Playbook"},
 ];
-let cur=0;const tot=10;
+let cur=0;window.currentPage=0;const tot=10;
 const allP=document.querySelectorAll('.page');
-function ui(){
+function ui(){window.currentPage=cur;
   allP.forEach((p,i)=>p.classList.toggle('active',i===cur));
   document.getElementById('btnPrev').disabled=cur===0;
   document.getElementById('btnNext').disabled=cur===tot-1;
@@ -627,5 +627,197 @@ document.getElementById('book').addEventListener('touchend',e=>{const dx=e.chang
 document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')nav(1);if(e.key==='ArrowLeft')nav(-1);if(e.key===' '){e.preventDefault();flip();}});
 ui();
 </script>
+
+<!-- ── TEXT-TO-SPEECH ENGINE ─────────────────────────────────────────────── -->
+<div id="tts-bar" style="position:fixed;bottom:0;left:0;right:0;z-index:300;
+  background:rgba(10,15,40,0.97);border-top:2px solid var(--accent,#00B8D9);
+  padding:8px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  box-shadow:0 -4px 20px rgba(0,0,0,0.5);">
+  <button id="tts-play" onclick="ttsToggle()" style="background:#1A73E8;color:#fff;border:none;
+    border-radius:6px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">
+    ▶ Read Aloud
+  </button>
+  <button id="tts-stop" onclick="ttsStop()" style="background:#F44336;color:#fff;border:none;
+    border-radius:6px;padding:7px 10px;font-size:13px;font-weight:700;cursor:pointer;">
+    ■ Stop
+  </button>
+  <div style="display:flex;align-items:center;gap:6px;">
+    <span style="font-size:11px;color:#94A3B8;">Voice:</span>
+    <button id="btn-female" onclick="setVoiceGender('female')" style="background:#7C4DFF;color:#fff;
+      border:none;border-radius:4px;padding:4px 10px;font-size:11px;cursor:pointer;">👩 Female</button>
+    <button id="btn-male" onclick="setVoiceGender('male')" style="background:#0D6EFD;color:#fff;
+      border:none;border-radius:4px;padding:4px 10px;font-size:11px;cursor:pointer;">👨 Male</button>
+  </div>
+  <div style="display:flex;align-items:center;gap:6px;">
+    <span style="font-size:11px;color:#94A3B8;">Speed:</span>
+    <input type="range" id="tts-rate" min="0.5" max="1.8" step="0.1" value="0.95"
+      style="width:70px;accent-color:#1A73E8;" oninput="ttsRateChange(this.value)"/>
+    <span id="tts-rate-lbl" style="font-size:11px;color:#94A3B8;width:28px;">0.95</span>
+  </div>
+  <div id="tts-status" style="font-size:11px;color:#64748B;flex:1;text-align:right;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;">Ready</div>
+</div>
+<div style="height:52px;"></div><!-- spacer for fixed bar -->
+
+<script>
+// ── TTS STATE ────────────────────────────────────────────────────────────────
+let ttsVoices = [];
+let ttsVoiceGender = 'female';
+let ttsRate = 0.95;
+let ttsSpeaking = false;
+let ttsQueue = [];
+let ttsQueueIdx = 0;
+
+function loadVoices(){
+  ttsVoices = window.speechSynthesis.getVoices();
+}
+window.speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function pickVoice(gender){
+  const pref = gender === 'female'
+    ? v => /female|woman|zira|samantha|victoria|karen|moira|fiona|tessa|google uk english female|google us english/i.test(v.name+v.voiceURI)
+    : v => /male|man|daniel|alex|fred|ralph|lee|thomas|google uk english male/i.test(v.name+v.voiceURI);
+  return ttsVoices.find(pref) || ttsVoices.find(v=>v.lang.startsWith('en')) || ttsVoices[0] || null;
+}
+
+function setVoiceGender(g){
+  ttsVoiceGender = g;
+  document.getElementById('btn-female').style.opacity = g==='female'?'1':'0.5';
+  document.getElementById('btn-male').style.opacity = g==='male'?'1':'0.5';
+  if(ttsSpeaking){ ttsStop(); ttsPlay(); }
+}
+
+function ttsRateChange(v){
+  ttsRate = parseFloat(v);
+  document.getElementById('tts-rate-lbl').textContent = v;
+}
+
+function getPageText(pageIdx){
+  const pages = document.querySelectorAll('.page');
+  if(pageIdx >= pages.length) return [];
+  const pg = pages[pageIdx];
+  const texts = [];
+
+  // Front side — bubbles, narrators, panel text
+  const front = pg.querySelector('.page-front');
+  if(front){
+    // Chapter header
+    const hdr = front.querySelector('.panel-header, .ch-header');
+    if(hdr) texts.push(hdr.innerText.replace(/[^a-zA-Z0-9 .,!?:()-]/g,'').trim());
+    // All text content
+    front.querySelectorAll('.bubble, .narrator, .sfx, .back-point, p, li, td, .feat-label, .feat-desc, .ri-label, .ri-desc, .item-label, .item-desc, .overlay-line').forEach(el=>{
+      const t = el.innerText.trim();
+      if(t && t.length > 3) texts.push(t);
+    });
+  }
+  return [...new Set(texts)].filter(Boolean);
+}
+
+function getBackText(pageIdx){
+  const pages = document.querySelectorAll('.page');
+  if(pageIdx >= pages.length) return [];
+  const pg = pages[pageIdx];
+  const texts = [];
+  const back = pg.querySelector('.page-back');
+  if(back){
+    back.querySelectorAll('.back-ch,.back-title,.back-point,.bch,.bttl,.bpt,p').forEach(el=>{
+      const t = el.innerText.trim();
+      if(t && t.length > 3) texts.push(t);
+    });
+  }
+  return [...new Set(texts)].filter(Boolean);
+}
+
+function speakText(text, onEnd){
+  if(!text || !window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.rate = ttsRate;
+  utt.pitch = 1.0;
+  utt.volume = 1.0;
+  const v = pickVoice(ttsVoiceGender);
+  if(v) utt.voice = v;
+  utt.onend = onEnd || null;
+  utt.onerror = onEnd || null;
+  window.speechSynthesis.speak(utt);
+}
+
+function ttsPlayQueue(queue, idx){
+  if(idx >= queue.length){
+    // After front, read back
+    const cur = typeof window.currentPage !== 'undefined' ? window.currentPage : (typeof cur2 !== 'undefined' ? cur2 : 0);
+    const backTexts = getBackText(cur);
+    if(backTexts.length > 0){
+      const backIntro = new SpeechSynthesisUtterance("Key lessons.");
+      backIntro.rate = ttsRate;
+      const v = pickVoice(ttsVoiceGender);
+      if(v) backIntro.voice = v;
+      backIntro.onend = () => ttsPlayQueue(backTexts, 0);
+      window.speechSynthesis.speak(backIntro);
+    } else {
+      ttsSpeaking = false;
+      document.getElementById('tts-play').textContent = '▶ Read Aloud';
+      document.getElementById('tts-status').textContent = 'Done';
+    }
+    return;
+  }
+  ttsSpeaking = true;
+  document.getElementById('tts-play').textContent = '⏸ Pause';
+  const shortText = queue[idx].substring(0,400);
+  document.getElementById('tts-status').textContent = shortText.substring(0,60)+'…';
+  speakText(shortText, () => ttsPlayQueue(queue, idx+1));
+}
+
+function ttsPlay(){
+  if(!window.speechSynthesis){ alert('Your browser does not support text-to-speech.'); return; }
+  const cur = typeof window.currentPage !== 'undefined' ? window.currentPage : 0;
+  const texts = getPageText(cur);
+  if(!texts.length){ document.getElementById('tts-status').textContent = 'No text found'; return; }
+  ttsPlayQueue(texts, 0);
+}
+
+function ttsToggle(){
+  if(window.speechSynthesis.speaking && !window.speechSynthesis.paused){
+    window.speechSynthesis.pause();
+    document.getElementById('tts-play').textContent = '▶ Resume';
+    document.getElementById('tts-status').textContent = 'Paused';
+  } else if(window.speechSynthesis.paused){
+    window.speechSynthesis.resume();
+    document.getElementById('tts-play').textContent = '⏸ Pause';
+  } else {
+    ttsPlay();
+  }
+}
+
+function ttsStop(){
+  window.speechSynthesis.cancel();
+  ttsSpeaking = false;
+  document.getElementById('tts-play').textContent = '▶ Read Aloud';
+  document.getElementById('tts-status').textContent = 'Stopped';
+}
+
+// Auto-play on page change — patch the nav function
+const _origNav = window.nav;
+window.nav = function(d){
+  ttsStop();
+  if(_origNav) _origNav(d);
+  setTimeout(ttsPlay, 600);
+};
+// Also patch goto (TOC nav)
+const _origGoto = window.goto;
+window.goto = function(i){
+  ttsStop();
+  if(_origGoto) _origGoto(i);
+  setTimeout(ttsPlay, 600);
+};
+
+// Auto-play on load
+window.addEventListener('load', () => {
+  loadVoices();
+  setTimeout(ttsPlay, 1200);
+});
+</script>
+
 </body>
 </html>
