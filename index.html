@@ -631,7 +631,8 @@ ui();
 
 
 
-<!-- TTS v4 -->
+
+<!-- TTS v5 -->
 <div id="tts-bar" style="position:fixed;bottom:0;left:0;right:0;z-index:300;
   background:rgba(10,15,40,0.97);border-top:2px solid #1A73E8;
   padding:8px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
@@ -643,7 +644,7 @@ ui();
   <div style="display:flex;align-items:center;gap:6px;">
     <span style="font-size:11px;color:#94A3B8;">Voice:</span>
     <button id="btn-f" onclick="setG('female')" style="background:#7C4DFF;color:#fff;border:none;border-radius:4px;padding:4px 9px;font-size:11px;cursor:pointer;">👩 F</button>
-    <button id="btn-m" onclick="setG('male')"   style="background:#0D6EFD;color:#fff;border:none;border-radius:4px;padding:4px 9px;font-size:11px;cursor:pointer;opacity:0.55;">👨 M</button>
+    <button id="btn-m" onclick="setG('male')" style="background:#0D6EFD;color:#fff;border:none;border-radius:4px;padding:4px 9px;font-size:11px;cursor:pointer;opacity:0.55;">👨 M</button>
   </div>
   <div style="display:flex;align-items:center;gap:5px;">
     <span style="font-size:11px;color:#94A3B8;">Speed:</span>
@@ -657,7 +658,7 @@ ui();
 </div>
 <div style="height:54px;"></div>
 <script>
-const PS={};
+const PS={"0": {"front": ["🎯 CH.01 — ANATOMY OF A PHISHING ATTACK", "// The attack lifecycle — from target selection to credential harvest", "// Spear phishing uses OSINT to craft targeted, convincing messages", "// Social engineering exploits trust and context to override critical thinking", "Phase 3: Delivery. Personalised spear-phish sent to kemi@techcorp.ng referencing her real projects from LinkedIn.", "The email references my actual project name and my manager's name... This must be legit!"], "back": ["CH.01", "Attack Lifecycle", "Reconnaissance: Attackers harvest OSINT (Open Source Intelligence) — LinkedIn, company websites, social media — to personalise attacks.", "Infrastructure: Lookalike domains + free TLS certificates create sites that appear legitimate. The padlock no longer means safety.", "Spear Phishing: Unlike mass phishing, spear phishing is targeted. It references real names, projects, and contexts to defeat scepticism.", "Defence: Train users to verify the URL independently of email content. Context-aware messages are not proof of legitimacy."]}, "1": {"front": ["🔬 CH.02 — URL FORENSICS", "// How to dissect a suspicious URL", "// LEGITIMATE vs FAKE — spot the pattern:", "Rule: Read the URL right-to-left from the first single slash. The domain immediately to the left of the first / is the REAL owner."], "back": ["CH.02", "URL Analysis", "Domain vs Subdomain: In \"bank.phishing.com\", the domain is phishing.com — not bank. The leftmost part of a URL is the least significant.", "HTTPS is not safety: TLS certificates are free and automated. Any phishing site can have a padlock. It means encryption, not legitimacy.", "Domain age matters: Check WHOIS — legitimate brands have domains registered years ago. Phishing domains are often hours or days old.", "Practical check: Hover over links before clicking. On mobile, press-and-hold to preview the URL before tapping."]}, "2": {"front": ["📧 CH.03 — EMAIL HEADER ANALYSIS", "// Analysing what the email client hides from you", "// The \"From\" display name can be anything — check Return-Path and Received headers", "// Email Authentication: SPF, DKIM, DMARC", "// A DMARC fail on a bank email = immediate red flag. Real bank = SPF/DKIM/DMARC pass."], "back": ["CH.03", "Email Authentication", "SPF (Sender Policy Framework): A DNS record specifying which servers can send email for a domain. SPF fail = sender not authorised.", "DKIM (DomainKeys Identified Mail): Cryptographically signs email content. DKIM fail = email was modified in transit or forged.", "DMARC: Tells receiving servers what to do with SPF/DKIM failures — none, quarantine, or reject. Check header \"Authentication-Results\".", "How to check: In Gmail, click the three dots → \"Show original\" to see full headers. Look for Authentication-Results."]}, "3": {"front": ["🧬 CH.04 — DGA AND AI-GENERATED DOMAINS", "// Domain Generation Algorithms — how malware finds its C2 servers", "// Detection signals for AI-DGA phishing domains:", "Old DGA: entropy 4.2 bits/char → DETECTED. AI-DGA: entropy 3.1 bits/char → mimics real domains → evades detection."], "back": ["CH.04", "AI-Powered Phishing Domains", "DGA Basics: Malware uses algorithms seeded with the date to generate hundreds of domains daily. Only attackers know which ones are active.", "AI-DGA: Neural networks trained on legitimate domain corpora generate domains with natural linguistic properties — defeating entropy analysis.", "Detection signals: Domain age (WHOIS), certificate transparency logs (crt.sh), IP reputation, absence of historical DNS queries.", "Tool: Check crt.sh for a domain's certificate history. A cert issued seconds before a suspicious email is a strong indicator of a phishing campaign."]}, "4": {"front": ["🎭 CH.05 — SOCIAL ENGINEERING MECHANICS", "// The six psychological triggers phishers exploit", "// BEC exploits authority + urgency + trust — highest-value phishing variant", "BEC (Business Email Compromise): attacker impersonates CEO and asks finance team to wire funds urgently. $2.7B lost globally per year."], "back": ["CH.05", "Social Engineering", "Cialdini's principles: Phishing systematically exploits authority, urgency, scarcity, social proof, fear, and reciprocity to bypass rational thinking.", "BEC (Business Email Compromise): The most damaging phishing variant. Attackers impersonate executives to authorise fraudulent wire transfers.", "Out-of-band verification: Any unexpected financial request, regardless of apparent sender, must be verified through a separate, established communication channel.", "Security culture: Employees must feel safe saying \"I need to verify this\" without fear of seeming difficult. A verification culture is your strongest BEC defence."]}, "5": {"front": ["🔐 CH.06 — MFA AND ITS LIMITS", "// Multi-Factor Authentication — what it stops and what it doesn't", "// AiTM (Adversary-in-the-Middle) phishing bypasses SMS/TOTP MFA:", "// FIDO2 hardware keys and passkeys are the gold standard against AiTM attacks", "FIDO2/Passkeys are phishing-resistant — the credential is bound to the origin domain. A phishing proxy cannot forward it to the real site!"], "back": ["CH.06", "MFA & Phishing Resistance", "MFA is essential but SMS and TOTP (time-based one-time password) codes can be intercepted by real-time phishing proxies (AiTM attacks).", "AiTM attacks use reverse proxies (Evilginx2, Modlishka) to relay credentials and session tokens in real time, defeating OTP-based MFA.", "Phishing-resistant MFA: FIDO2 hardware keys (YubiKey) and passkeys bind authentication to the origin domain. A phishing domain gets nothing.", "Recommendation: Use FIDO2/passkeys for privileged accounts. SMS MFA is better than nothing but should be upgraded where possible."]}, "6": {"front": ["🕵️ CH.07 — THREAT INTELLIGENCE & IOCs", "// Identifying and sharing phishing Indicators of Compromise (IOCs)", "// Tools to investigate suspicious domains and URLs:"], "back": ["CH.07", "Threat Intelligence", "IOCs (Indicators of Compromise) are evidence of an attack — domain names, IPs, URLs, email addresses, file hashes. Share them to protect others.", "MISP and OpenCTI are open-source threat intelligence platforms for sharing and correlating IOCs across organisations and sectors.", "Certificate Transparency: All TLS certificates are logged publicly. Searching crt.sh for your brand name reveals lookalike domains as they are created.", "Proactive monitoring: Set up alerts on crt.sh and domain registration feeds for your brand name to catch phishing infrastructure before it's used."]}, "7": {"front": ["🤖 CH.08 — AI DETECTION SYSTEMS", "// How ML classifies phishing domains in real-time", "// Adversarial evasion: attackers probe ML APIs to craft domains that score below detection threshold — the AI arms race continues.", "Cloudflare Gateway classifies 1 trillion DNS queries/day. New phishing domain blocked in <5ms from first query — before any user can visit it."], "back": ["CH.08", "ML-Based Detection", "Feature engineering: Effective ML phishing classifiers combine lexical (domain structure), temporal (age), infrastructure (IP/ASN), and certificate features.", "DNS-layer blocking: AI at the DNS resolver level (Cloudflare, Cisco Umbrella, Quad9) blocks malicious domains before any TCP connection is established.", "Zero-hour detection: Models trained on domain registration metadata can classify never-before-seen phishing domains at first query with >95% accuracy.", "Adversarial robustness: Ensemble models combining lexical, graph, and behavioural features are harder to evade than single-feature classifiers."]}, "8": {"front": ["🏢 CH.09 — ORGANISATIONAL DEFENCES", "// Defence-in-depth stack against phishing:", "// Layered defence assumes each control will sometimes fail — depth provides resilience", "No single layer is sufficient. A phishing email that bypasses the gateway, passes DNS filtering, and reaches a user with weak MFA can still succeed."], "back": ["CH.09", "Defence in Depth", "DMARC at enforcement (p=reject): Prevents your domain from being spoofed in phishing campaigns. Check your domain's DMARC record — many organisations don't have it.", "DNS-layer protection: Deploy AI-powered DNS filtering (Cloudflare Gateway, Quad9) to block phishing domains before users can navigate to them.", "SOAR integration: Automated playbooks triggered by phishing detections can quarantine emails, block domains, isolate endpoints, and notify users within seconds.", "Metrics that matter: Track phishing simulation click rates by department, time-to-report, and credential submission rate — these reveal training effectiveness."]}, "9": {"front": ["📋 CH.10 — INCIDENT RESPONSE PLAYBOOK", "// User reports clicking a phishing link — T+0:00", "The most important metric: time from click to containment. Every minute of delay expands the blast radius."], "back": ["CH.10", "IR Playbook", "Immediate containment: Isolate the endpoint and revoke active sessions before the attacker can pivot to other systems.", "Credential reset: Assume all credentials entered on the phishing site are compromised. Reset all passwords and enforce MFA upgrade.", "Lateral movement prevention: Check for any unusual authentication events in the 24 hours following the click — attackers often move quickly.", "IOC sharing: Share phishing domain, IP, and email sender details with your sector ISAC, AfricaCERT, and the impersonated organisation's abuse team."]}};
 let tG='female',tR=0.95,tA=false;
 function lV(){window._tv=window.speechSynthesis.getVoices();}
 window.speechSynthesis.onvoiceschanged=lV;lV();
@@ -665,7 +666,8 @@ function pV(g){
   const vv=window._tv||[];
   const fp=/female|woman|zira|samantha|victoria|karen|moira|fiona|tessa|google uk english female|google us english/i;
   const mp=/\bmale\b|daniel|alex|fred|ralph|thomas|google uk english male/i;
-  return vv.find(v=>(g==='female'?fp:mp).test(v.name+v.voiceURI))||vv.find(v=>v.lang&&v.lang.startsWith('en'))||vv[0]||null;
+  return vv.find(v=>(g==='female'?fp:mp).test(v.name+v.voiceURI))
+      ||vv.find(v=>v.lang&&v.lang.startsWith('en'))||vv[0]||null;
 }
 function setG(g){
   tG=g;
@@ -675,7 +677,7 @@ function setG(g){
 function spk(arr,i,done){
   if(!tA||i>=arr.length){if(done)done();return;}
   const raw=arr[i].replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().substring(0,480);
-  if(!raw){spk(arr,i+1,done);return;}
+  if(!raw||raw.length<3){spk(arr,i+1,done);return;}
   const u=new SpeechSynthesisUtterance(raw);
   u.rate=tR;u.pitch=1;u.volume=1;
   const v=pV(tG);if(v)u.voice=v;
@@ -693,7 +695,7 @@ function ttsReadPage(idx){
   const front=d.front||[];
   const back=d.back||[];
   if(!front.length&&!back.length){
-    document.getElementById('tts-lbl').textContent='No text';
+    document.getElementById('tts-lbl').textContent='No text on this page';
     tA=false;return;
   }
   spk(front,0,()=>{
@@ -727,8 +729,7 @@ function ttsToggle(){
   }
 }
 function ttsStop(){
-  tA=false;
-  window.speechSynthesis.cancel();
+  tA=false;window.speechSynthesis.cancel();
   document.getElementById('tts-play').textContent='▶ Read Aloud';
   document.getElementById('tts-lbl').textContent='Stopped';
 }
